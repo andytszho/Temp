@@ -1,0 +1,461 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>家常餸菜圖卡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+HK:wght@500;700;900&display=swap">
+<style>
+/* Layout: a toolbar over a wall of print-style picture cards; "逐張" mode shows one large card for tablet use in session. Single light theme on purpose: these are paper cards. */
+:root{
+  --page:#e4ece6; --card:#ffffff; --ink:#18241e; --muted:#56655d; --line:#d3ddd6;
+  --accent:#2c6a4d; --qty:#a8231b; --mask:#eef3ef;
+  --font:"Noto Sans HK","PingFang HK","Microsoft JhengHei",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--ink);font-family:var(--font);padding-inline:16px;padding-block:20px 48px;margin:0}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.top{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px}
+h1{font-size:1.6rem;font-weight:900;margin:0;letter-spacing:.02em}
+.top p{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+.controls{display:flex;flex-wrap:wrap;gap:12px}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.seg span{font-size:.8rem;color:var(--muted);align-self:center;padding:0 8px 0 6px;letter-spacing:.06em}
+.seg button{font:inherit;font-size:.95rem;font-weight:700;border:0;background:transparent;color:var(--ink);padding:8px 12px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+button:focus-visible{outline:3px solid #f0b429;outline-offset:2px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px}
+.card{container-type:inline-size;background:var(--card);border-radius:14px;border:1px solid var(--line);box-shadow:0 1px 0 rgba(24,36,30,.06),0 6px 18px -10px rgba(24,36,30,.25);overflow:hidden;display:flex;flex-direction:column}
+.band{height:10px;background:var(--cat)}
+.inner{display:grid;gap:14px;padding:16px 18px 18px}
+.meta{display:flex;justify-content:space-between;align-items:center}
+.no{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:700}
+.chip{font-size:.85rem;font-weight:700;color:#fff;background:var(--cat);border-radius:999px;padding:3px 12px;letter-spacing:.08em}
+.hero{display:flex;flex-direction:column;align-items:center;gap:8px}
+.hero svg{width:min(100%,230px);height:auto;aspect-ratio:1}
+.name{font-size:2rem;font-weight:900;margin:0;text-align:center;letter-spacing:.06em;line-height:1.2}
+.ings{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px}
+.ings li{display:flex;flex-direction:column;align-items:center;gap:2px;background:#f7faf8;border:1px solid var(--line);border-radius:12px;padding:10px 6px 10px}
+.ings svg{width:80px;height:80px}
+.lbl{font-size:1.3rem;font-weight:700;letter-spacing:.04em}
+.qty{font-size:1.1rem;font-weight:700;color:var(--qty)}
+.season{margin:0;font-size:1.05rem;color:var(--muted);text-align:center}
+.season b{color:var(--ink);font-weight:700}
+.mask{cursor:pointer;border-radius:6px;padding:0 4px}
+.masked{background:var(--mask);color:var(--accent);outline:2px dashed #a9c3b4;outline-offset:-1px}
+
+@container (min-width:620px){
+  .inner{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);grid-template-areas:"meta meta" "hero ings" "hero season" "hero btn";align-content:start;align-items:start;column-gap:28px;padding:20px 28px 26px}
+  .meta{grid-area:meta}.hero{grid-area:hero}.ings{grid-area:ings}.season{grid-area:season;text-align:left}.card .ingtoggle{grid-area:btn;justify-self:start;align-self:start}
+  .inner{grid-template-rows:auto auto auto 1fr}
+  .card.closed .ingtoggle{grid-area:ings;align-self:center;padding:48px 28px}
+  .hero svg{width:min(100%,320px)}
+  .name{font-size:2.6rem}
+  .ings svg{width:96px;height:96px}
+  .lbl{font-size:1.5rem}
+}
+.single .grid{grid-template-columns:1fr;max-width:980px;margin:0 auto;width:100%}
+.single .card{display:none}
+.single .card.on{display:flex}
+.pager{display:none;justify-content:center;align-items:center;gap:16px}
+.single .pager{display:flex}
+.pager button{font:inherit;font-size:1.1rem;font-weight:700;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 22px;cursor:pointer}
+.pager output{font-variant-numeric:tabular-nums;font-weight:700;color:var(--muted);min-width:5ch;text-align:center}
+.tip{color:var(--muted);font-size:.9rem;margin:0}
+.ingtoggle{font:inherit;font-weight:700;cursor:pointer;border-radius:12px;justify-self:center}
+.closed .ings,.closed .season{display:none}
+.closed .ingtoggle{font-size:1.4rem;padding:22px 28px;width:100%;background:#f7faf8;color:var(--accent);border:2px dashed #a9c3b4}
+.card:not(.closed) .ingtoggle{font-size:.9rem;padding:6px 14px;background:transparent;color:var(--muted);border:1px solid var(--line)}
+.editing .ings{display:grid!important}.editing .season{display:block!important}.editing .ingtoggle{display:none}
+.seg[hidden]{display:none}
+.pic{position:relative;display:grid;place-items:center}
+.hero .pic{width:min(100%,230px);aspect-ratio:1}
+.ings .pic{width:80px;height:80px}
+.pic .art{width:100%;height:100%}
+.pic svg{width:100%;height:100%}
+.pic img{width:100%;height:100%;object-fit:cover;border-radius:14px;display:block;background:#f2f5f3}
+.ings .pic img{border-radius:10px}
+.pic .tools{display:none;position:absolute;inset:auto 0 4px 0;justify-content:center;gap:4px;flex-wrap:wrap}
+.editing .pic .tools{display:flex}
+.editing .pic{outline:2px dashed var(--accent);outline-offset:4px;border-radius:14px}
+.editing .ings .pic{outline-offset:2px;margin-bottom:8px}
+.tools button{font:inherit;font-size:.8rem;font-weight:700;border:0;border-radius:999px;padding:5px 10px;cursor:pointer;background:var(--accent);color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.tools button.reset{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.ings .tools button{font-size:.72rem;padding:4px 7px}
+.pic.busy::after{content:"上載中…";position:absolute;inset:0;display:grid;place-items:center;background:rgba(255,255,255,.8);font-weight:700;color:var(--accent);border-radius:14px}
+#hidename[aria-pressed="true"],#edit[aria-pressed="true"]{background:#f0b429;color:var(--ink)}
+.notice{margin:0;font-size:.95rem;color:var(--qty);font-weight:700}
+@container (min-width:620px){.hero .pic{width:min(100%,320px)}.ings .pic{width:96px;height:96px}}
+@media print{.tools{display:none!important}.pic{outline:none!important}
+  body{background:#fff;padding:0}.top .controls,.pager,.tip{display:none}
+  .grid{grid-template-columns:1fr 1fr}.card{break-inside:avoid;box-shadow:none}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<!-- ===== Ingredient pictures (100×100) ===== -->
+<g id="i-celery" stroke-linejoin="round">
+  <g fill="#5fa23c"><circle cx="36" cy="26" r="8"/><circle cx="46" cy="16" r="9"/><circle cx="58" cy="18" r="8"/><circle cx="70" cy="26" r="8"/><circle cx="56" cy="9" r="6"/><circle cx="64" cy="14" r="6"/></g>
+  <path d="M28 93 L35 30 L46 30 L41 93Z" fill="#b8dc95" stroke="#5e9a3a" stroke-width="2.5"/>
+  <path d="M43 93 L49 24 L60 24 L56 93Z" fill="#a6d283" stroke="#5e9a3a" stroke-width="2.5"/>
+  <path d="M58 93 L66 30 L76 32 L69 93Z" fill="#b8dc95" stroke="#5e9a3a" stroke-width="2.5"/>
+  <path d="M38 88 L41 36 M51 88 L54 30 M63 88 L70 38" stroke="#7fb35a" stroke-width="1.5" fill="none"/>
+</g>
+<g id="i-chickensteak">
+  <path d="M14 52 C12 30 40 18 60 22 C80 26 92 42 86 60 C80 78 56 84 38 80 C22 76 16 66 14 52Z" fill="#f6dcc0" stroke="#c9976a" stroke-width="2.5"/>
+  <path d="M26 46 C40 36 62 36 76 46 M28 60 C42 52 60 52 74 60" stroke="#e5bb92" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+</g>
+<g id="i-kailan">
+  <path d="M44 95 L40 56 M52 95 L54 50 M60 95 L66 58" stroke="#8fc06c" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <path d="M41 60 C18 58 8 34 20 22 C32 10 50 26 44 46Z" fill="#2f6e3a" stroke="#1f4f28" stroke-width="2"/>
+  <path d="M54 54 C42 36 46 8 62 6 C80 6 82 30 62 50Z" fill="#3a7d44" stroke="#1f4f28" stroke-width="2"/>
+  <path d="M66 62 C70 44 90 38 93 54 C95 68 80 72 66 64Z" fill="#2f6e3a" stroke="#1f4f28" stroke-width="2"/>
+  <path d="M41 56 L26 28 M55 50 L62 14 M68 62 L87 54" stroke="#8fc06c" stroke-width="1.8" fill="none"/>
+</g>
+<g id="i-beef">
+  <path d="M12 42 C18 26 60 20 84 30 C94 36 92 62 82 70 C64 80 28 80 14 68 C8 60 8 50 12 42Z" fill="#c2362f" stroke="#8c1f1b" stroke-width="2.5"/>
+  <path d="M24 44 C34 38 40 50 52 44 C60 40 66 48 76 42 M22 60 C32 54 44 64 56 58 C66 54 72 62 80 56" stroke="#f3d0ca" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+</g>
+<g id="i-wing">
+  <path d="M10 62 C8 48 22 42 36 46 L50 50 C56 36 74 26 86 32 C94 38 92 50 82 54 L62 64 C48 74 18 78 10 62Z" fill="#f7dcc6" stroke="#c9946f" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M50 50 C52 56 58 62 62 64" stroke="#c9946f" stroke-width="2" fill="none"/>
+  <g fill="#e2b99a"><circle cx="26" cy="56" r="1.6"/><circle cx="34" cy="62" r="1.6"/><circle cx="70" cy="44" r="1.6"/><circle cx="76" cy="38" r="1.6"/><circle cx="22" cy="64" r="1.6"/></g>
+</g>
+<g id="i-potato">
+  <ellipse cx="66" cy="44" rx="22" ry="17" fill="#c99a52" stroke="#946a2a" stroke-width="2.5"/>
+  <ellipse cx="42" cy="60" rx="30" ry="23" fill="#d8ab62" stroke="#946a2a" stroke-width="2.5"/>
+  <g fill="#8a6026"><circle cx="30" cy="54" r="2"/><circle cx="50" cy="50" r="1.8"/><circle cx="44" cy="70" r="2"/><circle cx="60" cy="64" r="1.6"/><circle cx="72" cy="38" r="1.6"/></g>
+</g>
+<g id="i-charsiu">
+  <rect x="10" y="20" width="80" height="32" rx="12" fill="#c63d36" stroke="#6e1a17" stroke-width="2.5"/>
+  <path d="M16 28 Q30 22 46 26 M54 24 Q70 22 84 28 M18 46 Q34 50 50 46" stroke="#5b1714" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <g stroke="#6e1a17" stroke-width="2"><rect x="12" y="60" width="22" height="24" rx="3" fill="#c63d36"/><rect x="39" y="60" width="22" height="24" rx="3" fill="#c63d36"/><rect x="66" y="60" width="22" height="24" rx="3" fill="#c63d36"/></g>
+  <g fill="#f0b4a8"><rect x="16" y="64" width="14" height="16" rx="2"/><rect x="43" y="64" width="14" height="16" rx="2"/><rect x="70" y="64" width="14" height="16" rx="2"/></g>
+</g>
+<g id="i-egg">
+  <ellipse cx="38" cy="54" rx="20" ry="26" fill="#efd6b6" stroke="#b08458" stroke-width="2.5"/>
+  <ellipse cx="65" cy="60" rx="19" ry="25" fill="#f8ead6" stroke="#b08458" stroke-width="2.5"/>
+  <ellipse cx="31" cy="42" rx="4" ry="7" fill="#fbf0e2"/><ellipse cx="59" cy="49" rx="4" ry="7" fill="#fffaf2"/>
+</g>
+<g id="i-roastpork">
+  <rect x="12" y="32" width="76" height="42" rx="3" fill="#f6e6d4"/>
+  <rect x="12" y="32" width="76" height="12" fill="#d99a32"/>
+  <g fill="#f3c65c"><circle cx="20" cy="37" r="2.4"/><circle cx="30" cy="40" r="2"/><circle cx="40" cy="36" r="2.4"/><circle cx="52" cy="39" r="2"/><circle cx="62" cy="36" r="2.4"/><circle cx="74" cy="39" r="2"/><circle cx="83" cy="36" r="2"/></g>
+  <rect x="12" y="52" width="76" height="8" fill="#c8735c"/><rect x="12" y="64" width="76" height="10" fill="#b65f48"/>
+  <rect x="12" y="32" width="76" height="42" rx="3" fill="none" stroke="#8a4b2a" stroke-width="2.5"/>
+  <path d="M37 32 V74 M63 32 V74" stroke="#8a4b2a" stroke-width="1.8"/>
+</g>
+<g id="i-tofu" stroke="#b5ab8c" stroke-width="2.5" stroke-linejoin="round">
+  <path d="M18 40 L50 28 L84 38 L52 50Z" fill="#fffdf6"/>
+  <path d="M18 40 L52 50 L52 82 L18 72Z" fill="#f4efdf"/>
+  <path d="M52 50 L84 38 L84 70 L52 82Z" fill="#e6dfc7"/>
+</g>
+<g id="i-leg">
+  <path d="M58 60 L78 80" stroke="#f3eee2" stroke-width="9" stroke-linecap="round"/>
+  <path d="M58 60 L78 80" stroke="#c9bfa8" stroke-width="9" stroke-linecap="round" fill="none" opacity=".0"/>
+  <circle cx="82" cy="77" r="6" fill="#f3eee2" stroke="#b9ae94" stroke-width="2"/><circle cx="76" cy="84" r="6" fill="#f3eee2" stroke="#b9ae94" stroke-width="2"/>
+  <path d="M14 40 C14 18 46 10 62 26 C74 38 70 60 56 66 C40 72 14 62 14 40Z" fill="#f4d7bd" stroke="#c9946f" stroke-width="2.5"/>
+  <path d="M26 34 C36 26 50 26 58 34" stroke="#e5b896" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+</g>
+<g id="i-shiitake">
+  <path d="M43 58 L41 88 Q50 93 59 88 L57 58Z" fill="#efe3cc" stroke="#a58660" stroke-width="2"/>
+  <path d="M8 60 C10 20 90 20 92 60 C92 67 8 67 8 60Z" fill="#7a4b2c" stroke="#4e2e18" stroke-width="2.5"/>
+  <path d="M28 40 L34 46 M46 32 L50 40 M62 36 L58 44 M72 46 L78 42 M40 52 L46 50 M60 52 L66 54" stroke="#d9b98c" stroke-width="2.2" stroke-linecap="round"/>
+</g>
+<g id="i-watercress">
+  <path d="M50 92 C48 70 30 50 24 28 M50 92 C50 70 46 44 44 18 M50 92 C52 68 58 44 62 20 M50 92 C54 70 70 52 78 32" stroke="#3f7a32" stroke-width="2.5" fill="none"/>
+  <g fill="#3f8a33" stroke="#2c6424" stroke-width="1"><circle cx="24" cy="26" r="6"/><circle cx="30" cy="40" r="5"/><circle cx="20" cy="38" r="4.5"/><circle cx="44" cy="16" r="6"/><circle cx="38" cy="30" r="5"/><circle cx="50" cy="30" r="5"/><circle cx="62" cy="18" r="6"/><circle cx="56" cy="32" r="5"/><circle cx="68" cy="30" r="5"/><circle cx="78" cy="30" r="6"/><circle cx="70" cy="44" r="5"/><circle cx="82" cy="42" r="4.5"/><circle cx="36" cy="54" r="5"/><circle cx="62" cy="54" r="5"/><circle cx="46" cy="48" r="4.5"/></g>
+  <rect x="42" y="76" width="16" height="6" rx="2" fill="#c2843a"/>
+</g>
+<g id="i-leanpork">
+  <path d="M14 46 C18 30 70 24 86 38 C94 46 90 66 78 72 C60 80 26 80 16 68 C10 60 12 52 14 46Z" fill="#e58f86" stroke="#a9524a" stroke-width="2.5"/>
+  <path d="M26 46 C40 42 58 42 74 48 M24 58 C40 54 60 56 76 60" stroke="#f3b9b1" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+</g>
+<g id="i-luffa">
+  <path d="M12 82 C8 76 12 70 20 64 L70 20 C78 12 92 16 90 28 C88 34 84 38 80 42 L32 84 C24 90 16 88 12 82Z" fill="#6b9a3c" stroke="#3f6420" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M18 74 L78 22 M24 82 L86 30 M30 84 L84 38" stroke="#3f6420" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <path d="M86 18 L94 10" stroke="#7a5a2e" stroke-width="4" stroke-linecap="round"/>
+</g>
+<g id="i-lotus">
+  <ellipse cx="32" cy="46" rx="22" ry="14" fill="#d9b48a" stroke="#9c7346" stroke-width="2.5"/>
+  <ellipse cx="64" cy="40" rx="22" ry="14" fill="#cfa679" stroke="#9c7346" stroke-width="2.5"/>
+  <circle cx="58" cy="70" r="20" fill="#f1e1c6" stroke="#9c7346" stroke-width="2.5"/>
+  <g fill="#b58a5c"><circle cx="58" cy="70" r="3.6"/><circle cx="58" cy="59" r="3.6"/><circle cx="68" cy="65" r="3.6"/><circle cx="68" cy="76" r="3.6"/><circle cx="58" cy="81" r="3.6"/><circle cx="48" cy="76" r="3.6"/><circle cx="48" cy="65" r="3.6"/></g>
+</g>
+<g id="i-belly">
+  <rect x="14" y="28" width="72" height="48" rx="4" fill="#e7988b"/>
+  <rect x="14" y="28" width="72" height="8" fill="#f6e2c8"/>
+  <rect x="14" y="44" width="72" height="7" fill="#fbf1e6"/><rect x="14" y="61" width="72" height="5" fill="#fbf1e6"/>
+  <rect x="14" y="28" width="72" height="48" rx="4" fill="none" stroke="#a5584d" stroke-width="2.5"/>
+</g>
+<g id="i-choisum">
+  <path d="M42 95 L36 34 M50 95 L50 26 M58 95 L66 34" stroke="#7cb85a" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <g fill="#3f8a33" stroke="#2c6424" stroke-width="1.2">
+    <ellipse cx="28" cy="58" rx="13" ry="7" transform="rotate(-40 28 58)"/><ellipse cx="72" cy="56" rx="13" ry="7" transform="rotate(40 72 56)"/>
+    <ellipse cx="38" cy="44" rx="10" ry="6" transform="rotate(-55 38 44)"/><ellipse cx="62" cy="44" rx="10" ry="6" transform="rotate(55 62 44)"/>
+  </g>
+  <g fill="#f3d23b" stroke="#c9a51a" stroke-width=".8"><circle cx="36" cy="30" r="3.4"/><circle cx="31" cy="34" r="3"/><circle cx="40" cy="26" r="3"/><circle cx="50" cy="22" r="3.4"/><circle cx="46" cy="18" r="3"/><circle cx="55" cy="18" r="3"/><circle cx="66" cy="30" r="3.4"/><circle cx="70" cy="34" r="3"/><circle cx="62" cy="26" r="3"/></g>
+</g>
+<g id="i-fish">
+  <path d="M80 50 L96 34 L92 50 L96 66Z" fill="#9aa65a" stroke="#4f5a24" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M28 36 L33 22 L38 33 L44 20 L48 32 L54 21 L57 33 L63 26 L64 37" fill="#9aa65a" stroke="#4f5a24" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M6 52 C16 34 44 28 64 34 C74 38 80 44 82 50 C78 58 70 64 60 66 C40 72 16 68 6 52Z" fill="#c9c77a" stroke="#4f5a24" stroke-width="2.5"/>
+  <g fill="#4b4f2a" opacity=".75"><circle cx="40" cy="44" r="3"/><circle cx="52" cy="40" r="2.4"/><circle cx="60" cy="50" r="3"/><circle cx="46" cy="56" r="2.6"/><circle cx="34" cy="58" r="2"/><circle cx="68" cy="44" r="2"/><circle cx="70" cy="56" r="2.2"/></g>
+  <path d="M26 40 C30 48 30 56 26 62" stroke="#4f5a24" stroke-width="2" fill="none"/>
+  <circle cx="17" cy="47" r="3.6" fill="#fff" stroke="#333" stroke-width="1"/><circle cx="17" cy="47" r="1.7" fill="#222"/>
+  <path d="M6 53 L12 54" stroke="#4f5a24" stroke-width="2" stroke-linecap="round"/>
+</g>
+
+<!-- ===== Cooked pieces used inside dish pictures ===== -->
+<g id="p-celery"><path d="M-9 -3 L7 -5 L9 3 L-7 5Z" fill="#a9d68a" stroke="#5c9a3d" stroke-width="1"/><path d="M-6 0 L6 -1" stroke="#7fb35a" stroke-width=".8"/></g>
+<g id="p-chick"><rect x="-10" y="-3.5" width="20" height="7" rx="3.5" fill="#f3e2c6" stroke="#cfae80" stroke-width="1"/></g>
+<g id="p-kailan"><rect x="-12" y="-2.5" width="16" height="5" rx="2.5" fill="#86bb62"/><path d="M2 -2 C7 -10 16 -7 13 0 C16 7 7 10 2 2Z" fill="#2f7a3a" stroke="#1f4f28" stroke-width=".8"/></g>
+<g id="p-beef"><path d="M-10 -4 C-4 -7 6 -6 10 -3 C8 3 -2 6 -10 4Z" fill="#7e4128" stroke="#5a2c1a" stroke-width="1"/></g>
+<g id="p-bean"><ellipse rx="1.8" ry="1.3" fill="#2a1d18"/></g>
+<g id="p-potato"><path d="M-7 -6 L7 -7 L8 5 L-6 7Z" fill="#e7bd60" stroke="#b78a34" stroke-width="1" stroke-linejoin="round"/></g>
+<g id="p-wing"><path d="M-12 -1 C-12 -7 -2 -7 0 -3 C3 -7 12 -6 11 0 C10 5 2 4 0 2 C-3 6 -12 4 -12 -1Z" fill="#b8763a" stroke="#86501f" stroke-width="1"/></g>
+<g id="p-charsiu"><rect x="-5" y="-4" width="10" height="8" rx="1.5" fill="#c4433a" stroke="#7d2220" stroke-width="1"/></g>
+<g id="p-egg"><path d="M-10 0 C-10 -7 -2 -9 3 -7 C9 -8 12 -1 9 4 C7 9 -3 9 -7 6 C-10 5 -10 3 -10 0Z" fill="#f7d34a" stroke="#ddb02a" stroke-width="1"/></g>
+<g id="p-roastpork"><rect x="-7" y="-6" width="14" height="12" fill="#f4e4cc"/><rect x="-7" y="-6" width="14" height="4" fill="#d9952f"/><rect x="-7" y="1" width="14" height="5" fill="#b9654a"/><rect x="-7" y="-6" width="14" height="12" fill="none" stroke="#7a3f22" stroke-width="1"/></g>
+<g id="p-tofu"><rect x="-6.5" y="-6.5" width="13" height="13" rx="1.5" fill="#dcae5e" stroke="#a87a35" stroke-width="1"/><rect x="-4" y="-4" width="8" height="8" rx="1" fill="#efd39a"/></g>
+<g id="p-mush"><circle r="6.5" fill="#6e4126" stroke="#4e2e18" stroke-width="1"/><path d="M-3.5 -3.5 L3.5 3.5 M3.5 -3.5 L-3.5 3.5" stroke="#ead7b8" stroke-width="1.6" stroke-linecap="round"/></g>
+<g id="p-chicken"><path d="M-9 -5 C-3 -9 7 -8 9 -3 C10 3 4 8 -3 7 C-9 6 -11 0 -9 -5Z" fill="#f2d7a8" stroke="#c39a5e" stroke-width="1"/></g>
+<g id="p-date"><ellipse rx="3.6" ry="2.6" fill="#b3261e" stroke="#7a1712" stroke-width=".6"/></g>
+<g id="p-honeydate"><ellipse rx="4" ry="3" fill="#8a5a1e" stroke="#5e3b10" stroke-width=".6"/></g>
+<g id="p-ginger"><rect x="-6" y="-.8" width="12" height="1.6" rx=".8" fill="#e9cf7a"/></g>
+<g id="p-cress"><path d="M-9 4 L9 -4" stroke="#2f6a26" stroke-width="1.2"/><g fill="#3f8a33"><circle cx="-6" cy="1" r="3"/><circle cx="0" cy="-2" r="3"/><circle cx="6" cy="-4" r="3"/><circle cx="-1" cy="3" r="2.4"/></g></g>
+<g id="p-pork"><path d="M-7 -5 L7 -5 L8 5 L-8 5Z" fill="#d6a08c" stroke="#a46a55" stroke-width="1"/></g>
+<g id="p-luffa"><path d="M-7 -6 L8 -4 L5 7 L-8 4Z" fill="#cfe6a8" stroke="#6f9a3a" stroke-width="1.2" stroke-linejoin="round"/><path d="M-7 -6 L8 -4" stroke="#4f7a2a" stroke-width="2"/></g>
+<g id="p-lotus"><circle r="8" fill="#d6ad7c" stroke="#8a6238" stroke-width="1"/><g fill="#9a6e40"><circle r="1.6"/><circle cy="-4.5" r="1.6"/><circle cx="4" cy="-2" r="1.6"/><circle cx="4" cy="2.5" r="1.6"/><circle cy="4.8" r="1.6"/><circle cx="-4" cy="2.5" r="1.6"/><circle cx="-4" cy="-2" r="1.6"/></g></g>
+<g id="p-belly"><rect x="-7" y="-6" width="14" height="12" rx="1" fill="#7a3d22"/><rect x="-7" y="-2" width="14" height="2.5" fill="#e7c9a6"/><rect x="-7" y="3" width="14" height="1.6" fill="#e7c9a6"/><rect x="-7" y="-6" width="14" height="12" rx="1" fill="none" stroke="#4e2412" stroke-width="1"/></g>
+<g id="p-choisum"><rect x="-16" y="-1.8" width="24" height="3.6" rx="1.8" fill="#6fae4a"/><path d="M6 -2 C10 -9 19 -6 17 0 C19 6 10 9 6 2Z" fill="#3a8433" stroke="#245a1f" stroke-width=".7"/><circle cx="-16" cy="0" r="2" fill="#f3d23b"/></g>
+<g id="p-garlic"><circle r="1.7" fill="#f6ecc8" stroke="#cdb578" stroke-width=".6"/></g>
+<g id="p-scallion"><rect x="-2.4" y="-.9" width="4.8" height="1.8" rx=".9" fill="#5aa83a"/></g>
+<g id="p-onionline"><path d="M-10 0 C-4 -3 4 3 10 0" stroke="#5aa83a" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+</defs>
+</svg>
+
+<div class="wrap" id="app">
+  <div class="top">
+    <div>
+      <h1>家常餸菜圖卡</h1>
+      <p>11 張 · 菜名、材料、份量同調味。撳隱藏咗嘅字就會顯示答案。</p>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="文字提示">
+        <span>文字</span>
+        <button type="button" id="t-all" data-mode="all" aria-pressed="true">全部顯示</button>
+        <button type="button" id="t-first" data-mode="first" aria-pressed="false">首字提示</button>
+        <button type="button" id="t-hide" data-mode="hide" aria-pressed="false">隱藏</button>
+      </div>
+      <div class="seg" role="group" aria-label="檢視">
+        <span>檢視</span>
+        <button type="button" id="v-grid" data-view="grid" aria-pressed="true">全部卡</button>
+        <button type="button" id="v-single" data-view="single" aria-pressed="false">逐張</button>
+      </div>
+      <div class="seg">
+        <button type="button" id="hidename" aria-pressed="false">隱藏菜名</button>
+      </div>
+      <div class="seg" role="group" aria-label="材料">
+        <span>材料</span>
+        <button type="button" id="m-show" data-ings="show" aria-pressed="false">全部顯示</button>
+        <button type="button" id="m-hide" data-ings="hide" aria-pressed="true">全部收起</button>
+      </div>
+      <div class="seg" id="editseg" hidden>
+        <button type="button" id="edit" aria-pressed="false">編輯圖片</button>
+      </div>
+    </div>
+  </div>
+  <div class="pager">
+    <button type="button" id="prev">‹ 上一張</button>
+    <output id="count">1 / 11</output>
+    <button type="button" id="next">下一張 ›</button>
+  </div>
+  <p class="notice" id="notice" hidden></p>
+  <div class="grid" id="grid"></div>
+  <p class="tip">逐張模式可以用鍵盤左右箭咀轉卡。<span id="edittip" hidden>撳「編輯圖片」，再撳圖片上面嘅「換相」就可以用自己張相；同一樣材料（例如雞蛋）換一次，所有卡都會一齊更新。</span></p>
+  <input type="file" id="file" accept="image/*" hidden>
+</div>
+
+<script>
+const CATS={
+  "蔬菜":"#3a7d32","雞":"#93600a","牛":"#8a3b22","豬":"#b0455c","燒味":"#a8231b","魚":"#2a6592","湯":"#6f5228"
+};
+const DISHES=[
+ {name:"西芹炒雞柳",cat:"雞",ings:[["西芹","2棵","celery"],["雞扒","2塊","chickensteak"]],season:"蒜頭、生粉",
+  vessel:"plate",pieces:[["celery",9],["chick",7],["garlic",8,{top:1}]]},
+ {name:"芥蘭炒牛肉",cat:"牛",ings:[["芥蘭","1斤","kailan"],["牛肉","半斤","beef"]],season:"豆豉、蒜頭、生粉",
+  vessel:"plate",pieces:[["kailan",8],["beef",8],["bean",8,{top:1}],["garlic",6,{top:1}]]},
+ {name:"薯仔炆雞翼",cat:"雞",ings:[["雞翼","8隻","wing"],["馬鈴薯","2個","potato"]],season:"薑、蠔油、生抽",
+  vessel:"claypot",pieces:[["potato",7],["wing",6],["ginger",4,{top:1}]]},
+ {name:"叉燒炒蛋",cat:"燒味",ings:[["叉燒","半斤","charsiu"],["雞蛋","5隻","egg"]],season:"葱",
+  vessel:"plate",pieces:[["egg",12],["charsiu",9],["scallion",10,{top:1}]]},
+ {name:"火腩炆豆腐",cat:"燒味",ings:[["燒肉","半斤","roastpork"],["豆腐","2件","tofu"]],season:"蒜頭、蠔油",
+  vessel:"claypot",pieces:[["tofu",7],["roastpork",6],["garlic",6,{top:1}],["scallion",5,{top:1}]]},
+ {name:"冬菇蒸雞",cat:"雞",ings:[["雞腿","4隻","leg"],["鮮冬菇","6隻","shiitake"]],season:"薑絲、紅棗、生抽",
+  vessel:"plate",sauce:"#c99a5a",pieces:[["chicken",9],["mush",6],["date",4,{top:1}],["ginger",6,{top:1}]]},
+ {name:"西洋菜瘦肉湯",cat:"湯",ings:[["西洋菜","1斤","watercress"],["瘦肉","半斤","leanpork"]],season:"蜜棗、陳皮",
+  vessel:"bowl",pieces:[["cress",8],["pork",4],["honeydate",2,{top:1}]]},
+ {name:"絲瓜炒蛋",cat:"蔬菜",ings:[["絲瓜","2條","luffa"],["雞蛋","4隻","egg"]],season:"",
+  vessel:"plate",pieces:[["luffa",9],["egg",9]]},
+ {name:"蓮藕炆豬腩",cat:"豬",ings:[["蓮藕","1斤","lotus"],["豬腩肉","1斤","belly"]],season:"南乳、薑",
+  vessel:"claypot",pieces:[["lotus",6],["belly",7],["ginger",3,{top:1}]]},
+ {name:"蒜蓉炒菜心",cat:"蔬菜",ings:[["菜心","1斤","choisum"]],season:"蒜頭、鹽",
+  vessel:"plate",pieces:[["choisum",10,{rot:-20,jit:30}],["garlic",16,{top:1}]]},
+ {name:"清蒸桂花魚",cat:"魚",ings:[["桂花魚","1條","fish"]],season:"薑、葱、蒸魚豉油",
+  vessel:"fish"}
+];
+
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+function vesselSVG(v,sauce){
+  if(v==="claypot")return `<circle cx="50" cy="50" r="46" fill="#4a2f22"/><rect x="0" y="44" width="8" height="12" rx="3" fill="#3a2419"/><rect x="92" y="44" width="8" height="12" rx="3" fill="#3a2419"/><circle cx="50" cy="50" r="39" fill="#8f5326"/><circle cx="50" cy="50" r="39" fill="none" stroke="#2e1d14" stroke-width="2"/>`;
+  if(v==="bowl")return `<circle cx="50" cy="50" r="46" fill="#f6f8f4" stroke="#bfc9bf" stroke-width="1.5"/><circle cx="50" cy="50" r="38" fill="#e6be72"/><circle cx="50" cy="50" r="38" fill="none" stroke="#d0a95c" stroke-width="1.5"/><path d="M14 30 A42 42 0 0 1 30 12" stroke="#a9c3b4" stroke-width="3" fill="none"/>`;
+  let s=`<circle cx="50" cy="50" r="46" fill="#fdfdfb" stroke="#c6d0c7" stroke-width="1.5"/><circle cx="50" cy="50" r="37" fill="none" stroke="#e1e7e0" stroke-width="1.2"/>`;
+  if(sauce)s+=`<circle cx="50" cy="50" r="32" fill="${sauce}" opacity=".35"/>`;
+  return s;
+}
+function dishSVG(d,idx){
+  if(d.vessel==="fish"){
+    return `<svg viewBox="0 0 100 100" role="img" aria-label="${d.name}"><ellipse cx="50" cy="50" rx="48" ry="34" fill="#fdfdfb" stroke="#c6d0c7" stroke-width="1.5"/><ellipse cx="50" cy="50" rx="40" ry="27" fill="none" stroke="#e1e7e0" stroke-width="1.2"/><ellipse cx="50" cy="56" rx="36" ry="17" fill="#8a5a2a" opacity=".45"/><use href="#i-fish" transform="translate(13 22) scale(.76)"/>${[[34,44,-15],[42,40,10],[50,44,-8],[58,41,14],[40,50,6],[52,49,-12]].map(([x,y,r])=>`<use href="#p-onionline" transform="translate(${x} ${y}) rotate(${r}) scale(.8)"/>`).join("")}${[[38,46,20],[48,42,-30],[56,47,40],[46,50,-10]].map(([x,y,r])=>`<use href="#p-ginger" transform="translate(${x} ${y}) rotate(${r}) scale(.7)"/>`).join("")}</svg>`;
+  }
+  const r=rng(idx*977+13), R=d.vessel==="plate"?31:30;
+  let base=[],top=[];
+  d.pieces.forEach(([id,n,o={}])=>{for(let i=0;i<n;i++)(o.top?top:base).push([id,o])});
+  base.sort(()=>r()-.5);
+  const place=([id,o])=>{const a=r()*Math.PI*2,rad=Math.sqrt(r())*R,x=50+Math.cos(a)*rad,y=50+Math.sin(a)*rad;
+    const rot=o.rot!=null?o.rot+(r()-.5)*o.jit:r()*360; const sc=(o.s||1)*(0.9+r()*.25);
+    return `<use href="#p-${id}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rot.toFixed(0)}) scale(${sc.toFixed(2)})"/>`};
+  return `<svg viewBox="0 0 100 100" role="img" aria-label="${d.name}">${vesselSVG(d.vessel,d.sauce)}${base.map(place).join("")}${top.map(place).join("")}</svg>`;
+}
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const mask=(t,cls="")=>`<span class="mask ${cls}" data-full="${esc(t)}" tabindex="0" role="button">${esc(t)}</span>`;
+
+const DRAWN={};
+function pic(key,svg,alt){DRAWN[key]=svg;return `<div class="pic" data-key="${key}" data-alt="${esc(alt)}"><div class="art">${svg}</div><div class="tools"><button type="button" class="swap">換相</button><button type="button" class="reset" hidden>還原</button></div></div>`}
+const grid=document.getElementById("grid");
+grid.innerHTML=DISHES.map((d,i)=>`
+<article class="card closed${i===0?" on":""}" style="--cat:${CATS[d.cat]}" aria-label="第${i+1}張：${d.name}">
+  <div class="band"></div>
+  <div class="inner">
+    <div class="meta"><span class="no">${i+1} / ${DISHES.length}</span><span class="chip">${d.cat}</span></div>
+    <div class="hero">${pic("d"+i,dishSVG(d,i),d.name)}<h2 class="name">${mask(d.name,"dname")}</h2></div>
+    <ul class="ings">${d.ings.map(([n,q,ic])=>`<li>${pic("i-"+ic,`<svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-${ic}"/></svg>`,n)}<span class="lbl">${mask(n)}</span><span class="qty">${esc(q)}</span></li>`).join("")}</ul>
+    ${d.season?`<p class="season"><b>調味：</b>${d.season.split("、").map(mask).join("、")}</p>`:`<p class="season"><b>調味：</b>少少鹽</p>`}
+    <button type="button" class="ingtoggle" aria-expanded="false">顯示材料</button>
+  </div>
+</article>`).join("");
+
+function setOpen(card,open){card.classList.toggle("closed",!open);const b=card.querySelector(".ingtoggle");b.textContent=open?"收起材料":"顯示材料";b.setAttribute("aria-expanded",open)}
+grid.addEventListener("click",e=>{const b=e.target.closest(".ingtoggle");if(b){const c=b.closest(".card");setOpen(c,c.classList.contains("closed"))}});
+document.querySelectorAll("[data-ings]").forEach(b=>b.addEventListener("click",()=>{
+  const open=b.dataset.ings==="show";document.querySelectorAll(".card").forEach(c=>setOpen(c,open));
+  document.querySelectorAll("[data-ings]").forEach(x=>x.setAttribute("aria-pressed",x===b));
+}));
+let mode="all";
+function render(el){
+  const full=el.dataset.full,hideName=nameHidden&&el.classList.contains("dname");
+  if((mode==="all"&&!hideName)||el.dataset.rev==="1"){el.textContent=full;el.classList.remove("masked");return}
+  el.classList.add("masked");
+  el.textContent=hideName?"？？？":mode==="first"?full[0]+"○".repeat(full.length-1):"？".repeat(Math.min(full.length,3));
+}
+let nameHidden=false;
+document.getElementById("hidename").addEventListener("click",e=>{
+  nameHidden=!nameHidden;e.currentTarget.setAttribute("aria-pressed",nameHidden);
+  e.currentTarget.textContent=nameHidden?"顯示菜名":"隱藏菜名";
+  document.querySelectorAll(".dname").forEach(el=>{delete el.dataset.rev;render(el)});
+});
+function renderAll(){document.querySelectorAll(".mask").forEach(render)}
+document.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>{
+  mode=b.dataset.mode;
+  document.querySelectorAll("[data-mode]").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  document.querySelectorAll(".mask").forEach(el=>delete el.dataset.rev);
+  renderAll();
+}));
+grid.addEventListener("click",e=>{const el=e.target.closest(".mask");if(!el||(!el.classList.contains("masked")&&el.dataset.rev!=="1"))return;el.dataset.rev=el.dataset.rev==="1"?"0":"1";render(el)});
+grid.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("mask")){e.preventDefault();e.target.click()}});
+
+const app=document.getElementById("app"),cards=[...document.querySelectorAll(".card")],count=document.getElementById("count");
+let cur=0;
+function show(i){cur=(i+cards.length)%cards.length;cards.forEach((c,k)=>c.classList.toggle("on",k===cur));count.textContent=`${cur+1} / ${cards.length}`}
+document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>{
+  app.classList.toggle("single",b.dataset.view==="single");
+  document.querySelectorAll("[data-view]").forEach(x=>x.setAttribute("aria-pressed",x===b));
+}));
+document.getElementById("prev").onclick=()=>show(cur-1);
+document.getElementById("next").onclick=()=>show(cur+1);
+document.addEventListener("keydown",e=>{if(!app.classList.contains("single"))return;if(e.key==="ArrowRight")show(cur+1);if(e.key==="ArrowLeft")show(cur-1)});
+
+/* ---------- Editable pictures: photos stored as artifact assets, indexed in db ---------- */
+let photos={};            // key -> asset id
+let db=null,assets=null;
+const notice=document.getElementById("notice");
+function say(msg){notice.textContent=msg;notice.hidden=!msg}
+function paint(){
+  document.querySelectorAll(".pic").forEach(p=>{
+    const id=photos[p.dataset.key],art=p.querySelector(".art");
+    const want=id?"img:"+id:"svg";
+    if(p.dataset.shown!==want){
+      art.innerHTML=id?`<img src="/_blob/${encodeURIComponent(id)}" alt="${p.dataset.alt}">`:DRAWN[p.dataset.key];
+      p.dataset.shown=want;
+    }
+    p.querySelector(".reset").hidden=!id;
+  });
+}
+function shrink(file){
+  return new Promise((res)=>{
+    const url=URL.createObjectURL(file),im=new Image();
+    im.onload=()=>{const max=1200,s=Math.min(1,max/Math.max(im.width,im.height));
+      const c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+      c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);
+      c.toBlob(b=>res(b||file),"image/jpeg",.88)};
+    im.onerror=()=>{URL.revokeObjectURL(url);res(file)};
+    im.src=url;
+  });
+}
+let target=null;
+const fileInput=document.getElementById("file");
+grid.addEventListener("click",async e=>{
+  const p=e.target.closest(".pic");if(!p)return;
+  if(e.target.closest(".swap")){target=p;fileInput.value="";fileInput.click();}
+  if(e.target.closest(".reset")){
+    const key=p.dataset.key,old=photos[key];
+    try{await db.doc("pictures/"+key).delete();delete photos[key];paint();say("");
+      if(old)assets.delete(old).catch(()=>{});}
+    catch(err){say("未能還原圖片，請再試一次。")}
+  }
+});
+fileInput.addEventListener("change",async()=>{
+  const f=fileInput.files[0],p=target;if(!f||!p)return;
+  const key=p.dataset.key,old=photos[key];
+  p.classList.add("busy");say("");
+  try{
+    const blob=await shrink(f);
+    const up=await assets.upload(blob,blob.type?undefined:{type:"image/jpeg"});
+    await db.doc("pictures/"+key).set({asset:up.id,updatedAt:new Date().toISOString()});
+    photos[key]=up.id;paint();
+    if(old&&old!==up.id)assets.delete(old).catch(()=>{});
+  }catch(err){
+    const c=err&&err.code;
+    say(c==="too_large"?"張相太大，請揀細啲嘅相。":c==="unsupported_type"?"呢個檔案唔係圖片，請揀 JPG 或 PNG。":c==="quota_exceeded"?"儲存空間已滿，請先還原一啲唔用嘅相。":"上載唔到，請再試一次。");
+  }finally{p.classList.remove("busy")}
+});
+document.getElementById("edit").addEventListener("click",e=>{
+  const on=e.currentTarget.getAttribute("aria-pressed")!=="true";
+  e.currentTarget.setAttribute("aria-pressed",on);app.classList.toggle("editing",on);
+  document.getElementById("edittip").hidden=!on;
+});
+(async()=>{
+  if(!window.claude||!claude.use)return;
+  db=await claude.use("db");
+  if(!db)return;
+  db.collection("pictures").onSnapshot(snap=>{
+    const m={};snap.docs.forEach(d=>{const v=d.data();if(v&&typeof v.asset==="string"&&/^[0-9a-f]{32}$/.test(v.asset))m[d.id]=v.asset});
+    photos=m;paint();
+  },()=>{});
+  assets=await claude.use("assets");
+  if(assets)document.getElementById("editseg").hidden=false;
+})();
+</script>
+
+</body></html>
